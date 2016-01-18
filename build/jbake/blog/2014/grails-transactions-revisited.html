@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Grails Transactions - Revisited</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <!-- Le styles -->
+    <link href="../../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link href="../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+    <div id="wrap">
+	
+	<!-- Fixed navbar -->
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../../">@rpalcolea</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="../../index.html">Home</a></li>
+            <li><a href="../../about.html">About</a></li>
+            <li><a href="../../feed.xml">Subscribe</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+    <div class="container">
+	
+	<div class="page-header">
+		<h1>Grails Transactions - Revisited</h1>
+	</div>
+
+	<p><em>09 junio 2014</em></p>
+
+	<p>
+<p>As we know, Grails services by default have automatic transaction management such as propagation and so on. By setting transactional to false you disable automatic Spring managed transaction demarcation for every method in the service. When is set to the true, The propagation level of the transaction is by default PROPAGATION_REQUIRED. Also we can use the @ Transactional and @ NotTransactional annotations. </p>
+
+<p>What is a transaction? In simple terms, a transaction is:</p>
+
+<ul>
+<li>getConnection()</li>
+<li>setAutocommit(false)</li>
+<li>do work</li>
+<li>commit</li>
+<li>Error handling and rollback if necessary</li>
+</ul>
+
+<p>But, what is happening in our database when we use transactions? The purpose of this post is to present some small code examples and the behavior at database level. There are some requirements for them to run the following examples:</p>
+
+<ol>
+<li>Create a grails applicaton (2.3+)</li>
+<li>Configure the Datasource.groovy file to use a MySQL connnection.</li>
+<li>Enable the query log for your MySQL server. <a href="http://stackoverflow.com/questions/6479107/how-to-enable-mysql-query-log">Here is a reference for that</a></li>
+</ol>
+
+<p>First, we can start creating a Domain Class and a Service to examine how a transaction works:</p>
+
+<pre class="prettyprint">
+<code>
+class Person {
+	String name
+}
+
+@Transactional
+class PersonService {
+	def save() {
+		new Person(name: "Roberto").save()
+		new Person(name: "Raj").save()
+	}
+}
+</code>
+</pre>
+
+<p>Now, if we invoke the save method, we can see the following in our database log.</p>
+
+<pre class="prettyprint">
+<code>
+140605  8:42:42    11 Query SET autocommit=0
+11 Query insert into person (version, name) values (0, 'Roberto')
+11 Query insert into person (version, name) values (0, 'Raj')
+11 Query commit
+11 Query SET autocommit=1
+</code>
+</pre>
+
+<p>As you can see, is setting the autocommit to 0, inserting, commit, set autocommit 1. This is what we are expecting to do, this is the way we handle transactions.</p>
+
+<p>Now let's see what happens when we add another method:</p>
+
+<pre class="prettyprint">
+<code>
+@Transactional
+class PersonService {
+
+	def save() {
+		new Person(name: "Roberto").save()
+		new Person(name: "Raj").save()
+		anotherSave()
+	}
+
+	def anotherSave() {
+		new Person(name: "anotherPerson").save()
+	}
+}
+</code>
+</pre>
+
+<p>If we invoke the save method again we will get this result:</p>
+
+<pre class="prettyprint">
+<code>
+140605  8:48:58    11 Query SET autocommit=0
+11 Query insert into person (version, name) values (0, 'Roberto')
+11 Query insert into person (version, name) values (0, 'Raj')
+11 Query insert into person (version, name) values (0, 'anotherPerson')
+11 Query commit
+11 Query SET autocommit=1
+</code>
+</pre>
+
+<p>By default, the Grails transactions have REQUIRED propagation,  and in this case the 'anotherSave' method will join the current transaction.</p>
+
+<p>But what if we need to run the 'anotherMethod' in another transaction? Well, we can just change the transaction's propagation to a REQUIRES_NEW. This will look like this:</p>
+
+<pre class="prettyprint">
+<code>
+@Transactional
+class PersonService {
+
+	def save() {
+		new Person(name: "Roberto").save()
+		new Person(name: "Raj").save()
+		anotherSave()
+	}
+
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	def anotherSave() {
+		new Person(name: "anotherPerson").save()
+	}
+}
+</code>
+</pre>
+
+<p>Again, we can invoke the save method and see the results:</p>
+
+<pre class="prettyprint">
+<code>
+140605  8:58:41    11 Query SET autocommit=0
+				11 Query insert into person (version, name) values (0, 'Roberto')
+				11 Query insert into person (version, name) values (0, 'Raj')
+				10 Query SET autocommit=0
+				10 Query insert into person (version, name) values (0, 'anotherPerson')
+				10 Query commit
+				10 Query SET autocommit=1
+				11 Query commit
+				11 Query SET autocommit=1
+</code>
+</pre>
+
+<p>At first glance we can see the change in autocommit but the most important thing are the numbers (10 and 11). These numbers represent the thread id, with this we know that they are running in another transaction.</p>
+
+<p>Now, let's see what happens when a RuntimeException occurs in save method after invoking anotherSave. If you want, truncate our table after that, can change our code to this:</p>
+
+<pre class="prettyprint">
+<code>
+@Transactional
+class PersonService {
+
+	def save() {
+		new Person(name: "Roberto").save()
+		new Person(name: "Raj").save()
+		anotherSave()
+		throw new RuntimeException("oh!")
+	}
+
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	def anotherSave() {
+		new Person(name: "anotherPerson").save()
+	}
+}
+</code>
+</pre>
+
+<p>If we invoke the save method we will get the following in our database log:</p>
+
+<pre class="prettyprint">
+<code>
+140605  9:06:19    11 Query SET autocommit=0
+				11 Query insert into person (version, name) values (0, 'Roberto')
+				11 Query insert into person (version, name) values (0, 'Raj')
+				10 Query SET autocommit=0
+				10 Query insert into person (version, name) values (0, 'anotherPerson')
+				10 Query commit
+				10 Query SET autocommit=1
+				11 Query rollback
+				11 Query SET autocommit=1
+</code>
+</pre>
+
+<p>Ok, we know we have two transactions, let's make query to the database.</p>
+
+<pre class="prettyprint">
+<code>
+mysql&gt; select * from person;
++----+---------+---------------+
+| id | version | name          |
++----+---------+---------------+
+|  3 |       0 | anotherPerson |
++----+---------+---------------+
+1 row in set (0.01 sec)
+
+mysql&gt;
+</code>
+</pre>
+
+<p>As you can see, we have a new record in our database, this was generated by the method anotherSave. This is because we are running this statement in another transaction. </p>
+
+<p><strong>IMPORTANT: automatic rollback occurs if a method throws a runtime exception (i.e. one that extends RuntimeException) or an Error. Checked exceptions do not roll back transactions.</strong></p>
+
+<p>Ok, by now you know that the transaction disables autocommit to execute one or more statements and then do the commit.</p>
+
+<p>Now imagine a scenario in which you require that the  statements of anotherSave should be with auto-commit (MySQL has autocommit enabled by default). Let's take a look on this... first, we will put a few examples of possible ideas that won't work:</p>
+
+<p><strong>FAIL: Using @NotTransactional annotation</strong></p>
+
+<pre class="prettyprint">
+<code>
+@Transactional
+class PersonService {
+
+	def save() {
+		new Person(name: "Roberto").save()
+		anotherSave()
+		new Person(name: "Raj").save()
+	}
+
+	@NotTransactional
+	def anotherSave() {
+		new Person(name: "anotherPerson").save()
+	}
+}
+</code>
+</pre>
+
+<p>With this approach our database log will be:</p>
+
+<pre class="prettyprint">
+<code>
+	140605  9:16:34    11 Query SET autocommit=0
+				11 Query insert into person (version, name) values (0, 'Roberto')
+				11 Query insert into person (version, name) values (0, 'anotherPerson')
+				11 Query insert into person (version, name) values (0, 'Raj')
+				11 Query commit
+				11 Query SET autocommit=1
+</code></pre>
+
+<p>Look at this... is under the same thread. So this option is discarded.</p>
+
+<p><strong>FAIL: Using Groovy SQL without change the propagation</strong></p>
+
+<p>Well... maybe we can think something like "If MySQL sets autocommit by default we can use SQL with GroovySQL and done". The service can be like this:</p>
+
+<pre class="prettyprint">
+<code>
+@Transactional
+class PersonService {
+
+	def save() {
+		new Person(name: "Roberto").save()
+		anotherSave()
+		new Person(name: "Raj").save()
+	}
+
+	def sessionFactory
+
+	def anotherSave() {
+		def sql = new Sql(sessionFactory.currentSession.connection())
+		sql.execute("INSERT INTO `test`.`person` (`version`, `name`) VALUES ('0', 'anotherPerson')")
+	}
+
+}
+</code>
+</pre>
+
+<p>Ok... run this and you will see all in one transaction:</p>
+
+<pre class="prettyprint">
+<code>
+140605  9:21:15    21 Query SET autocommit=0
+				21 Query insert into person (version, name) values (0, 'Roberto')
+				21 Query INSERT INTO `test`.`person` (`version`, `name`) VALUES ('0', 'anotherPerson')
+				21 Query insert into person (version, name) values (0, 'Raj')
+				21 Query commit
+				21 Query SET autocommit=1
+</code></pre>
+
+<p>So this is not working as we expected... oh but maybe "we can just change the connection to autocommit".</p>
+
+<p><strong>FAIL: Using Groovy SQL and change the connection to autocommit</strong></p>
+
+<pre class="prettyprint">
+<code>
+@Transactional
+class PersonService {
+
+	def save() {
+		new Person(name: "Roberto").save()
+		anotherSave()
+		new Person(name: "Raj").save()
+	}
+
+	def sessionFactory
+
+	def anotherSave() {
+		def sql = new Sql(sessionFactory.currentSession.connection())
+		sql.connection.setAutoCommit(true)
+		sql.execute("INSERT INTO `test`.`person` (`version`, `name`) VALUES ('0', 'anotherPerson')")
+		sql.connection.setAutoCommit(false)
+	}
+
+}
+</code>
+</pre>
+
+<p>Execute this and look:</p>
+
+<pre class="prettyprint">
+<code>
+140605  9:22:47    21 Query SET autocommit=0
+				21 Query insert into person (version, name) values (0, 'Roberto')
+				21 Query SET autocommit=1
+				21 Query INSERT INTO `test`.`person` (`version`, `name`) VALUES ('0', 'anotherPerson')
+				21 Query SET autocommit=0
+				21 Query insert into person (version, name) values (0, 'Raj')
+				21 Query commit
+				21 Query SET autocommit=1
+</code></pre>
+
+<p>Oh! is changing the autocommit but wait... is the same thread. What is happening with the first query. Of course this seems to be ok because we are inserting everything and the code is not throwing a RuntimeException or Error. Lets add a RuntimeException and run it again. For this, we will truncate our table.</p>
+
+<pre class="prettyprint">
+<code>
+@Transactional
+class PersonService {
+
+	def save() {
+		new Person(name: "Roberto").save()
+		anotherSave()
+		new Person(name: "Raj").save()
+		throw new RuntimeException("Oh!")
+	}
+
+	def sessionFactory
+
+	def anotherSave() {
+		def sql = new Sql(sessionFactory.currentSession.connection())
+		sql.connection.setAutoCommit(true)
+		sql.execute("INSERT INTO `test`.`person` (`version`, `name`) VALUES ('0', 'anotherPerson')")
+		sql.connection.setAutoCommit(false)
+	}
+}
+</code></pre>
+
+<p>Execute this and you will see the same query log but look at your table data:</p>
+
+<pre class="prettyprint">
+<code>
+mysql&gt; select * from person;
++----+---------+---------------+
+| id | version | name          |
++----+---------+---------------+
+|  1 |       0 | Roberto       |
+|  2 |       0 | anotherPerson |
++----+---------+---------------+
+2 rows in set (0.00 sec)
+
+mysql&gt;
+</code>
+</pre>
+
+<p>Yes we set the autocommit to true but we were under the same transaction so our first query was commited too and we don't want this.</p>
+
+<p>This is where we can use another propagation. Let's try it with NOT<em>SUPPORTED and use GORM again. NOT</em>SUPPORTED execute non-transactionally, suspend the current transaction if one exists.</p>
+
+<p><strong>OK: Use NOT_SUPPORTED propagation</strong></p>
+
+<pre class="prettyprint">
+<code>
+@Transactional
+class PersonService {
+
+	def save() {
+		new Person(name: "Roberto").save()
+		anotherSave()
+		new Person(name: "Raj").save()
+		throw new RuntimeException("Oh!")
+	}
+
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	def anotherSave() {
+		new Person(name: "another Person").save()
+	}
+}
+</code></pre>
+
+<p>Let's try this piece of code. We will truncate our table before that. </p>
+
+<pre class="prettyprint">
+<code>
+140605  9:29:14    21 Query SET autocommit=0
+				21 Query insert into person (version, name) values (0, 'Roberto')
+				20 Query insert into person (version, name) values (0, 'another Person')
+				21 Query insert into person (version, name) values (0, 'Raj')
+				21 Query rollback
+				21 Query SET autocommit=1
+</code></pre>
+
+<p>Take a look on the thread ids, our another person statement is running in another thread and using the autocommit behaviour from MySQL. Now, look at our data</p>
+
+<pre class="prettyprint">
+<code>
+mysql&gt; select * from person;
++----+---------+----------------+
+| id | version | name           |
++----+---------+----------------+
+|  2 |       0 | another Person |
++----+---------+----------------+
+1 row in set (0.00 sec)
+
+mysql&gt;
+</code></pre>
+
+<p>We only have the record that we want and because we had an exception, the transaction in the save method became a rollback. This is a nice approach. </p>
+
+<p><strong>IMPORTANT: We know that maybe is not common to go under an auto-commit rule but you never know maybe tomorrow you will need it</strong></p>
+
+<p>To finish this small post, here is a list of the available propagations:</p>
+
+<ul>
+<li>PROPAGATION_MANDATORY:  Support a current transaction; throw an exception if no current transaction exists.</li>
+<li>PROPAGATION<em>NESTED: Execute within a nested transaction if a current transaction exists, behave like PROPAGATION</em>REQUIRED else.</li>
+<li>PROPAGATION_NEVER: Do not support a current transaction; throw an exception if a current transaction exists.</li>
+<li>PROPAGATION<em>NOT</em>SUPPORTED: Do not support a current transaction; rather always execute non-transactionally.</li>
+<li>PROPAGATION_REQUIRED: Support a current transaction; create a new one if none exists.</li>
+<li>PROPAGATION<em>REQUIRES</em>NEW: Create a new transaction, suspending the current transaction if one exists.</li>
+<li>PROPAGATION_SUPPORTS: Support a current transaction; execute non-transactionally if none exists.</li>
+</ul>
+
+<p>we deal with important data to the business, so we must pay close attention to avoid any data loss problem while running transactions</p>
+
+<p>These examples were developed along with Raj Govindarajan.</p>
+
+<p>Hope this can help you in the future.</p>
+</p>
+
+	<hr />
+	
+		</div>
+		<div id="push"></div>
+    </div>
+
+    <div id="footer">
+      <div class="container">
+        <p class="muted credit">&copy; 2016 Roberto Perez Alcolea | Mixed with <a href="http://getbootstrap.com/">Bootstrap v3.1.1</a> | Baked with <a href="http://jbake.org">JBake v2.4.0</a></p>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../js/jquery-1.11.1.min.js"></script>
+    <script src="../../js/bootstrap.min.js"></script>
+    <script src="../../js/prettify.js"></script>
+
+  </body>
+</html>

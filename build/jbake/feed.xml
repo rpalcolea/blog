@@ -1,0 +1,558 @@
+<?xml version="1.0"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>JBake</title>
+    <link>http://rpalcolea.github.io</link>
+    <atom:link href="http://rpalcolea.github.io/feed.xml" rel="self" type="application/rss+xml" />
+    <description>JBake Bootstrap Template</description>
+    <language>en-gb</language>
+    <pubDate>dom, 17 ene 2016 19:59:40 -0800</pubDate>
+    <lastBuildDate>dom, 17 ene 2016 19:59:40 -0800</lastBuildDate>
+
+    <item>
+      <title>Restart</title>
+      <link>http://rpalcolea.github.io/blog/2016/grails-transactions-revisited.html</link>
+      <pubDate>dom, 17 ene 2016 00:00:00 -0800</pubDate>
+      <guid isPermaLink="false">blog/2016/grails-transactions-revisited.html</guid>
+      	<description>
+	
+&lt;p&gt;After a couple of years I have found the motivation to write in this blog again. The idea is simple, writing about software development, particularly in the use of Groovy technologies.&lt;/p&gt;
+
+	</description>
+    </item>
+    <item>
+      <title>Grails Transactions - Revisited</title>
+      <link>http://rpalcolea.github.io/blog/2014/grails-transactions-revisited.html</link>
+      <pubDate>lun, 9 jun 2014 00:00:00 -0700</pubDate>
+      <guid isPermaLink="false">blog/2014/grails-transactions-revisited.html</guid>
+      	<description>
+	
+&lt;p&gt;As we know, Grails services by default have automatic transaction management such as propagation and so on. By setting transactional to false you disable automatic Spring managed transaction demarcation for every method in the service. When is set to the true, The propagation level of the transaction is by default PROPAGATION_REQUIRED. Also we can use the @ Transactional and @ NotTransactional annotations. &lt;/p&gt;
+
+&lt;p&gt;What is a transaction? In simple terms, a transaction is:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;getConnection()&lt;/li&gt;
+&lt;li&gt;setAutocommit(false)&lt;/li&gt;
+&lt;li&gt;do work&lt;/li&gt;
+&lt;li&gt;commit&lt;/li&gt;
+&lt;li&gt;Error handling and rollback if necessary&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;But, what is happening in our database when we use transactions? The purpose of this post is to present some small code examples and the behavior at database level. There are some requirements for them to run the following examples:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Create a grails applicaton (2.3+)&lt;/li&gt;
+&lt;li&gt;Configure the Datasource.groovy file to use a MySQL connnection.&lt;/li&gt;
+&lt;li&gt;Enable the query log for your MySQL server. &lt;a href=&quot;http://stackoverflow.com/questions/6479107/how-to-enable-mysql-query-log&quot;&gt;Here is a reference for that&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;First, we can start creating a Domain Class and a Service to examine how a transaction works:&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+class Person {
+	String name
+}
+
+@Transactional
+class PersonService {
+	def save() {
+		new Person(name: &quot;Roberto&quot;).save()
+		new Person(name: &quot;Raj&quot;).save()
+	}
+}
+&lt;/code&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;Now, if we invoke the save method, we can see the following in our database log.&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+140605  8:42:42    11 Query SET autocommit=0
+11 Query insert into person (version, name) values (0, &apos;Roberto&apos;)
+11 Query insert into person (version, name) values (0, &apos;Raj&apos;)
+11 Query commit
+11 Query SET autocommit=1
+&lt;/code&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;As you can see, is setting the autocommit to 0, inserting, commit, set autocommit 1. This is what we are expecting to do, this is the way we handle transactions.&lt;/p&gt;
+
+&lt;p&gt;Now let&apos;s see what happens when we add another method:&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+@Transactional
+class PersonService {
+
+	def save() {
+		new Person(name: &quot;Roberto&quot;).save()
+		new Person(name: &quot;Raj&quot;).save()
+		anotherSave()
+	}
+
+	def anotherSave() {
+		new Person(name: &quot;anotherPerson&quot;).save()
+	}
+}
+&lt;/code&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;If we invoke the save method again we will get this result:&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+140605  8:48:58    11 Query SET autocommit=0
+11 Query insert into person (version, name) values (0, &apos;Roberto&apos;)
+11 Query insert into person (version, name) values (0, &apos;Raj&apos;)
+11 Query insert into person (version, name) values (0, &apos;anotherPerson&apos;)
+11 Query commit
+11 Query SET autocommit=1
+&lt;/code&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;By default, the Grails transactions have REQUIRED propagation,  and in this case the &apos;anotherSave&apos; method will join the current transaction.&lt;/p&gt;
+
+&lt;p&gt;But what if we need to run the &apos;anotherMethod&apos; in another transaction? Well, we can just change the transaction&apos;s propagation to a REQUIRES_NEW. This will look like this:&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+@Transactional
+class PersonService {
+
+	def save() {
+		new Person(name: &quot;Roberto&quot;).save()
+		new Person(name: &quot;Raj&quot;).save()
+		anotherSave()
+	}
+
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	def anotherSave() {
+		new Person(name: &quot;anotherPerson&quot;).save()
+	}
+}
+&lt;/code&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;Again, we can invoke the save method and see the results:&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+140605  8:58:41    11 Query SET autocommit=0
+				11 Query insert into person (version, name) values (0, &apos;Roberto&apos;)
+				11 Query insert into person (version, name) values (0, &apos;Raj&apos;)
+				10 Query SET autocommit=0
+				10 Query insert into person (version, name) values (0, &apos;anotherPerson&apos;)
+				10 Query commit
+				10 Query SET autocommit=1
+				11 Query commit
+				11 Query SET autocommit=1
+&lt;/code&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;At first glance we can see the change in autocommit but the most important thing are the numbers (10 and 11). These numbers represent the thread id, with this we know that they are running in another transaction.&lt;/p&gt;
+
+&lt;p&gt;Now, let&apos;s see what happens when a RuntimeException occurs in save method after invoking anotherSave. If you want, truncate our table after that, can change our code to this:&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+@Transactional
+class PersonService {
+
+	def save() {
+		new Person(name: &quot;Roberto&quot;).save()
+		new Person(name: &quot;Raj&quot;).save()
+		anotherSave()
+		throw new RuntimeException(&quot;oh!&quot;)
+	}
+
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	def anotherSave() {
+		new Person(name: &quot;anotherPerson&quot;).save()
+	}
+}
+&lt;/code&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;If we invoke the save method we will get the following in our database log:&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+140605  9:06:19    11 Query SET autocommit=0
+				11 Query insert into person (version, name) values (0, &apos;Roberto&apos;)
+				11 Query insert into person (version, name) values (0, &apos;Raj&apos;)
+				10 Query SET autocommit=0
+				10 Query insert into person (version, name) values (0, &apos;anotherPerson&apos;)
+				10 Query commit
+				10 Query SET autocommit=1
+				11 Query rollback
+				11 Query SET autocommit=1
+&lt;/code&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;Ok, we know we have two transactions, let&apos;s make query to the database.&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+mysql&amp;gt; select * from person;
++----+---------+---------------+
+| id | version | name          |
++----+---------+---------------+
+|  3 |       0 | anotherPerson |
++----+---------+---------------+
+1 row in set (0.01 sec)
+
+mysql&amp;gt;
+&lt;/code&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;As you can see, we have a new record in our database, this was generated by the method anotherSave. This is because we are running this statement in another transaction. &lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;IMPORTANT: automatic rollback occurs if a method throws a runtime exception (i.e. one that extends RuntimeException) or an Error. Checked exceptions do not roll back transactions.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Ok, by now you know that the transaction disables autocommit to execute one or more statements and then do the commit.&lt;/p&gt;
+
+&lt;p&gt;Now imagine a scenario in which you require that the  statements of anotherSave should be with auto-commit (MySQL has autocommit enabled by default). Let&apos;s take a look on this... first, we will put a few examples of possible ideas that won&apos;t work:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;FAIL: Using @NotTransactional annotation&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+@Transactional
+class PersonService {
+
+	def save() {
+		new Person(name: &quot;Roberto&quot;).save()
+		anotherSave()
+		new Person(name: &quot;Raj&quot;).save()
+	}
+
+	@NotTransactional
+	def anotherSave() {
+		new Person(name: &quot;anotherPerson&quot;).save()
+	}
+}
+&lt;/code&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;With this approach our database log will be:&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+	140605  9:16:34    11 Query SET autocommit=0
+				11 Query insert into person (version, name) values (0, &apos;Roberto&apos;)
+				11 Query insert into person (version, name) values (0, &apos;anotherPerson&apos;)
+				11 Query insert into person (version, name) values (0, &apos;Raj&apos;)
+				11 Query commit
+				11 Query SET autocommit=1
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Look at this... is under the same thread. So this option is discarded.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;FAIL: Using Groovy SQL without change the propagation&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Well... maybe we can think something like &quot;If MySQL sets autocommit by default we can use SQL with GroovySQL and done&quot;. The service can be like this:&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+@Transactional
+class PersonService {
+
+	def save() {
+		new Person(name: &quot;Roberto&quot;).save()
+		anotherSave()
+		new Person(name: &quot;Raj&quot;).save()
+	}
+
+	def sessionFactory
+
+	def anotherSave() {
+		def sql = new Sql(sessionFactory.currentSession.connection())
+		sql.execute(&quot;INSERT INTO `test`.`person` (`version`, `name`) VALUES (&apos;0&apos;, &apos;anotherPerson&apos;)&quot;)
+	}
+
+}
+&lt;/code&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;Ok... run this and you will see all in one transaction:&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+140605  9:21:15    21 Query SET autocommit=0
+				21 Query insert into person (version, name) values (0, &apos;Roberto&apos;)
+				21 Query INSERT INTO `test`.`person` (`version`, `name`) VALUES (&apos;0&apos;, &apos;anotherPerson&apos;)
+				21 Query insert into person (version, name) values (0, &apos;Raj&apos;)
+				21 Query commit
+				21 Query SET autocommit=1
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;So this is not working as we expected... oh but maybe &quot;we can just change the connection to autocommit&quot;.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;FAIL: Using Groovy SQL and change the connection to autocommit&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+@Transactional
+class PersonService {
+
+	def save() {
+		new Person(name: &quot;Roberto&quot;).save()
+		anotherSave()
+		new Person(name: &quot;Raj&quot;).save()
+	}
+
+	def sessionFactory
+
+	def anotherSave() {
+		def sql = new Sql(sessionFactory.currentSession.connection())
+		sql.connection.setAutoCommit(true)
+		sql.execute(&quot;INSERT INTO `test`.`person` (`version`, `name`) VALUES (&apos;0&apos;, &apos;anotherPerson&apos;)&quot;)
+		sql.connection.setAutoCommit(false)
+	}
+
+}
+&lt;/code&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;Execute this and look:&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+140605  9:22:47    21 Query SET autocommit=0
+				21 Query insert into person (version, name) values (0, &apos;Roberto&apos;)
+				21 Query SET autocommit=1
+				21 Query INSERT INTO `test`.`person` (`version`, `name`) VALUES (&apos;0&apos;, &apos;anotherPerson&apos;)
+				21 Query SET autocommit=0
+				21 Query insert into person (version, name) values (0, &apos;Raj&apos;)
+				21 Query commit
+				21 Query SET autocommit=1
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Oh! is changing the autocommit but wait... is the same thread. What is happening with the first query. Of course this seems to be ok because we are inserting everything and the code is not throwing a RuntimeException or Error. Lets add a RuntimeException and run it again. For this, we will truncate our table.&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+@Transactional
+class PersonService {
+
+	def save() {
+		new Person(name: &quot;Roberto&quot;).save()
+		anotherSave()
+		new Person(name: &quot;Raj&quot;).save()
+		throw new RuntimeException(&quot;Oh!&quot;)
+	}
+
+	def sessionFactory
+
+	def anotherSave() {
+		def sql = new Sql(sessionFactory.currentSession.connection())
+		sql.connection.setAutoCommit(true)
+		sql.execute(&quot;INSERT INTO `test`.`person` (`version`, `name`) VALUES (&apos;0&apos;, &apos;anotherPerson&apos;)&quot;)
+		sql.connection.setAutoCommit(false)
+	}
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Execute this and you will see the same query log but look at your table data:&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+mysql&amp;gt; select * from person;
++----+---------+---------------+
+| id | version | name          |
++----+---------+---------------+
+|  1 |       0 | Roberto       |
+|  2 |       0 | anotherPerson |
++----+---------+---------------+
+2 rows in set (0.00 sec)
+
+mysql&amp;gt;
+&lt;/code&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;Yes we set the autocommit to true but we were under the same transaction so our first query was commited too and we don&apos;t want this.&lt;/p&gt;
+
+&lt;p&gt;This is where we can use another propagation. Let&apos;s try it with NOT&lt;em&gt;SUPPORTED and use GORM again. NOT&lt;/em&gt;SUPPORTED execute non-transactionally, suspend the current transaction if one exists.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;OK: Use NOT_SUPPORTED propagation&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+@Transactional
+class PersonService {
+
+	def save() {
+		new Person(name: &quot;Roberto&quot;).save()
+		anotherSave()
+		new Person(name: &quot;Raj&quot;).save()
+		throw new RuntimeException(&quot;Oh!&quot;)
+	}
+
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	def anotherSave() {
+		new Person(name: &quot;another Person&quot;).save()
+	}
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Let&apos;s try this piece of code. We will truncate our table before that. &lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+140605  9:29:14    21 Query SET autocommit=0
+				21 Query insert into person (version, name) values (0, &apos;Roberto&apos;)
+				20 Query insert into person (version, name) values (0, &apos;another Person&apos;)
+				21 Query insert into person (version, name) values (0, &apos;Raj&apos;)
+				21 Query rollback
+				21 Query SET autocommit=1
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Take a look on the thread ids, our another person statement is running in another thread and using the autocommit behaviour from MySQL. Now, look at our data&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+mysql&amp;gt; select * from person;
++----+---------+----------------+
+| id | version | name           |
++----+---------+----------------+
+|  2 |       0 | another Person |
++----+---------+----------------+
+1 row in set (0.00 sec)
+
+mysql&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;We only have the record that we want and because we had an exception, the transaction in the save method became a rollback. This is a nice approach. &lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;IMPORTANT: We know that maybe is not common to go under an auto-commit rule but you never know maybe tomorrow you will need it&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;To finish this small post, here is a list of the available propagations:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;PROPAGATION_MANDATORY:  Support a current transaction; throw an exception if no current transaction exists.&lt;/li&gt;
+&lt;li&gt;PROPAGATION&lt;em&gt;NESTED: Execute within a nested transaction if a current transaction exists, behave like PROPAGATION&lt;/em&gt;REQUIRED else.&lt;/li&gt;
+&lt;li&gt;PROPAGATION_NEVER: Do not support a current transaction; throw an exception if a current transaction exists.&lt;/li&gt;
+&lt;li&gt;PROPAGATION&lt;em&gt;NOT&lt;/em&gt;SUPPORTED: Do not support a current transaction; rather always execute non-transactionally.&lt;/li&gt;
+&lt;li&gt;PROPAGATION_REQUIRED: Support a current transaction; create a new one if none exists.&lt;/li&gt;
+&lt;li&gt;PROPAGATION&lt;em&gt;REQUIRES&lt;/em&gt;NEW: Create a new transaction, suspending the current transaction if one exists.&lt;/li&gt;
+&lt;li&gt;PROPAGATION_SUPPORTS: Support a current transaction; execute non-transactionally if none exists.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;we deal with important data to the business, so we must pay close attention to avoid any data loss problem while running transactions&lt;/p&gt;
+
+&lt;p&gt;These examples were developed along with Raj Govindarajan.&lt;/p&gt;
+
+&lt;p&gt;Hope this can help you in the future.&lt;/p&gt;
+
+	</description>
+    </item>
+    <item>
+      <title>Grails Transactions - Revisited</title>
+      <link>http://rpalcolea.github.io/blog/2014/spring-security-login-with-recaptcha.html</link>
+      <pubDate>lun, 28 abr 2014 00:00:00 -0700</pubDate>
+      <guid isPermaLink="false">blog/2014/spring-security-login-with-recaptcha.html</guid>
+      	<description>
+	
+&lt;h2&gt;Spring Security Login With Recaptcha&lt;/h2&gt;
+
+&lt;p&gt;A few months ago I was asked to create a login with ReCaptcha using spring security core and recaptcha plugins. At that time I made a plugin for solving the requirement &lt;a href=&quot;http://grails.org/plugin/recaptcha-spring-security&quot;&gt;Spring Security Plugin Recaptcha&lt;/a&gt;. Today I want to share another idea to accomplish this.&lt;/p&gt;
+
+&lt;p&gt;Assuming the application has &lt;a href=&quot;http://grails.org/plugin/recaptcha&quot;&gt;ReCaptcha&lt;/a&gt; and &lt;a href=&quot;http://grails.org/plugin/spring-security-core&quot;&gt;spring security core&lt;/a&gt;  the first thing to do is add the ReCaptcha widget our loginview, usually auth.gsp.&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+	&lt;code&gt;
+&amp;lt;p&amp;gt;
+	&amp;lt;label for=&apos;username&apos;&amp;gt;&amp;lt;g:message code=&quot;springSecurity.login.username.label&quot;/&amp;gt;:&amp;lt;/label&amp;gt;
+	&amp;lt;input type=&apos;text&apos; class=&apos;text_&apos; name=&apos;j_username&apos; id=&apos;username&apos;/&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+	&amp;lt;label for=&apos;password&apos;&amp;gt;&amp;lt;g:message code=&quot;springSecurity.login.password.label&quot;/&amp;gt;:&amp;lt;/label&amp;gt;
+	&amp;lt;input type=&apos;password&apos; class=&apos;text_&apos; name=&apos;j_password&apos; id=&apos;password&apos;/&amp;gt;
+&amp;lt;/p&amp;gt;
+
+&amp;lt;p&amp;gt;
+	&amp;lt;recaptcha:ifEnabled&amp;gt;
+		&amp;lt;recaptcha:recaptcha  theme=&quot;clean&quot;/&amp;gt;
+		&amp;lt;recaptcha:ifFailed&amp;gt;CAPTCHA Failed&amp;lt;/recaptcha:ifFailed&amp;gt;
+		&amp;lt;/recaptcha:ifEnabled&amp;gt;
+&amp;lt;/p&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then generate a filter (AuthFilter.groovy) to override the &apos;authenticationProcessingFilter&apos; bean (this filter subclasses the plugin&apos;s RequestHolderAuthenticationFilter to Maintain its functionality). You can name this filter as you like and put it under /src/groovy folder.&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;&lt;code&gt;
+import com.megatome.grails.RecaptchaService
+import grails.plugin.springsecurity.web.authentication.RequestHolderAuthenticationFilter
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.AuthenticationException
+
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler
+import org.springframework.web.context.request.RequestContextHolder
+
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
+class AuthFilter extends RequestHolderAuthenticationFilter {
+	private String recaptcha_response
+	private String recaptcha_challenge
+	private String remoteAddr
+	private String failureUrl
+
+	RecaptchaService recaptchaService
+
+	private SimpleUrlAuthenticationFailureHandler failureHandler = new SimpleUrlAuthenticationFailureHandler()
+
+	@Override
+	Authentication attemptAuthentication(HttpServletRequest request, 	HttpServletResponse response) throws AuthenticationException {
+			def session = RequestContextHolder.currentRequestAttributes().getSession()
+
+			recaptcha_response = request.getParameter(&quot;recaptcha_response_field&quot;)
+			recaptcha_challenge = request.getParameter(&quot;recaptcha_challenge_field&quot;)
+			remoteAddr = request.getRemoteAddr()
+
+			Map params = [&quot;recaptcha_response_field&quot;: recaptcha_response, &quot;recaptcha_challenge_field&quot;: recaptcha_challenge]
+
+			// Check if valid
+			if (!recaptchaService.verifyAnswer(session, remoteAddr, params)) {
+				// Redirect user to login page
+				failureHandler.setDefaultFailureUrl(failureUrl)
+				failureHandler.onAuthenticationFailure(request, response, new BadCredentialsException(&quot;Captcha invalid!&quot;))
+				return
+			}
+
+			super.attemptAuthentication(request, response)
+	}
+
+	public void setFailureUrl(String failureUrl) {
+		this.failureUrl = failureUrl
+	}
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Finally, we will register this bean in our resources.groovy as follows:&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;&lt;code&gt;
+beans = {
+	authenticationProcessingFilter (AuthFilter) {
+		def conf = SpringSecurityUtils.securityConfig
+		authenticationManager = ref(&apos;authenticationManager&apos;)
+		failureUrl = conf.failureHandler. defaultFailureUrl
+		recaptchaService = ref(&apos;recaptchaService&apos;)
+		storeLastUsername  = conf.apf.storeLastUsername
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Once done, we can use our ReCaptcha widget as part of our authentication process.&lt;/p&gt;
+
+&lt;p&gt;I hope this has been helpful.&lt;/p&gt;
+
+	</description>
+    </item>
+
+  </channel> 
+</rss>

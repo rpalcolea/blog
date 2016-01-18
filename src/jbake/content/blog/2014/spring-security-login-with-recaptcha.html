@@ -1,0 +1,102 @@
+title=Grails Transactions - Revisited
+date=2014-04-28
+type=post
+tags=blog
+status=published
+~~~~~~
+
+<h2>Spring Security Login With Recaptcha</h2>
+
+<p>A few months ago I was asked to create a login with ReCaptcha using spring security core and recaptcha plugins. At that time I made a plugin for solving the requirement <a href="http://grails.org/plugin/recaptcha-spring-security">Spring Security Plugin Recaptcha</a>. Today I want to share another idea to accomplish this.</p>
+
+<p>Assuming the application has <a href="http://grails.org/plugin/recaptcha">ReCaptcha</a> and <a href="http://grails.org/plugin/spring-security-core">spring security core</a>  the first thing to do is add the ReCaptcha widget our loginview, usually auth.gsp.</p>
+
+<pre class="prettyprint">
+	<code>
+&lt;p&gt;
+	&lt;label for='username'&gt;&lt;g:message code="springSecurity.login.username.label"/&gt;:&lt;/label&gt;
+	&lt;input type='text' class='text_' name='j_username' id='username'/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+	&lt;label for='password'&gt;&lt;g:message code="springSecurity.login.password.label"/&gt;:&lt;/label&gt;
+	&lt;input type='password' class='text_' name='j_password' id='password'/&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+	&lt;recaptcha:ifEnabled&gt;
+		&lt;recaptcha:recaptcha  theme="clean"/&gt;
+		&lt;recaptcha:ifFailed&gt;CAPTCHA Failed&lt;/recaptcha:ifFailed&gt;
+		&lt;/recaptcha:ifEnabled&gt;
+&lt;/p&gt;
+</code></pre>
+
+<p>Then generate a filter (AuthFilter.groovy) to override the 'authenticationProcessingFilter' bean (this filter subclasses the plugin's RequestHolderAuthenticationFilter to Maintain its functionality). You can name this filter as you like and put it under /src/groovy folder.</p>
+
+<pre class="prettyprint"><code>
+import com.megatome.grails.RecaptchaService
+import grails.plugin.springsecurity.web.authentication.RequestHolderAuthenticationFilter
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.AuthenticationException
+
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler
+import org.springframework.web.context.request.RequestContextHolder
+
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
+class AuthFilter extends RequestHolderAuthenticationFilter {
+	private String recaptcha_response
+	private String recaptcha_challenge
+	private String remoteAddr
+	private String failureUrl
+
+	RecaptchaService recaptchaService
+
+	private SimpleUrlAuthenticationFailureHandler failureHandler = new SimpleUrlAuthenticationFailureHandler()
+
+	@Override
+	Authentication attemptAuthentication(HttpServletRequest request, 	HttpServletResponse response) throws AuthenticationException {
+			def session = RequestContextHolder.currentRequestAttributes().getSession()
+
+			recaptcha_response = request.getParameter("recaptcha_response_field")
+			recaptcha_challenge = request.getParameter("recaptcha_challenge_field")
+			remoteAddr = request.getRemoteAddr()
+
+			Map params = ["recaptcha_response_field": recaptcha_response, "recaptcha_challenge_field": recaptcha_challenge]
+
+			// Check if valid
+			if (!recaptchaService.verifyAnswer(session, remoteAddr, params)) {
+				// Redirect user to login page
+				failureHandler.setDefaultFailureUrl(failureUrl)
+				failureHandler.onAuthenticationFailure(request, response, new BadCredentialsException("Captcha invalid!"))
+				return
+			}
+
+			super.attemptAuthentication(request, response)
+	}
+
+	public void setFailureUrl(String failureUrl) {
+		this.failureUrl = failureUrl
+	}
+}
+</code></pre>
+
+<p>Finally, we will register this bean in our resources.groovy as follows:</p>
+
+<pre class="prettyprint"><code>
+beans = {
+	authenticationProcessingFilter (AuthFilter) {
+		def conf = SpringSecurityUtils.securityConfig
+		authenticationManager = ref('authenticationManager')
+		failureUrl = conf.failureHandler. defaultFailureUrl
+		recaptchaService = ref('recaptchaService')
+		storeLastUsername  = conf.apf.storeLastUsername
+  }
+}
+</code></pre>
+
+<p>Once done, we can use our ReCaptcha widget as part of our authentication process.</p>
+
+<p>I hope this has been helpful.</p>
