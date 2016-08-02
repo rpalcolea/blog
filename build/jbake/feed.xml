@@ -6,25 +6,145 @@
     <atom:link href="http://rpalcolea.github.io/feed.xml" rel="self" type="application/rss+xml" />
     <description>JBake Bootstrap Template</description>
     <language>en-gb</language>
-    <pubDate>dom, 17 ene 2016 20:02:33 -0800</pubDate>
-    <lastBuildDate>dom, 17 ene 2016 20:02:33 -0800</lastBuildDate>
+    <pubDate>Mon, 1 Aug 2016 15:39:51 -0700</pubDate>
+    <lastBuildDate>Mon, 1 Aug 2016 15:39:51 -0700</lastBuildDate>
 
     <item>
-      <title>Restart</title>
-      <link>http://rpalcolea.github.io/blog/2016/grails-transactions-revisited.html</link>
-      <pubDate>dom, 17 ene 2016 00:00:00 -0800</pubDate>
-      <guid isPermaLink="false">blog/2016/grails-transactions-revisited.html</guid>
+      <title>GR8Conf US Recap 2016</title>
+      <link>http://rpalcolea.github.io/blog/2016/GR8Conf-US-Recap-2016.html</link>
+      <pubDate>Mon, 1 Aug 2016 00:00:00 -0700</pubDate>
+      <guid isPermaLink="false">blog/2016/GR8Conf-US-Recap-2016.html</guid>
       	<description>
 	
-&lt;p&gt;After a couple of years I have found the motivation to write in this blog again. The idea is simple, writing about software development, particularly in the use of Groovy technologies.&lt;/p&gt;
+&lt;p&gt;This was my first time attending GR8Conf and had a wonderful time and definitely it was a great experience.
+	As I mentioned to a few guys, I always wanted to attend but the circumstances were not appropriate on previous years but finally I did it!&lt;/p&gt;
+
+&lt;h2&gt;The workshops&lt;/h2&gt;
+
+&lt;p&gt;
+In the morning I went to the &lt;b&gt;“Getting Started With Grails 3”&lt;/b&gt; workshop by Jeff Scott Brown. This session covered all the fundamentals of the framework, probably better as an introduction to developers not familiar with the framework but Jeff also included tips and tricks for developers with experience.
+&lt;/p&gt;
+
+&lt;p&gt;
+In the afternoon I attended Jeff Brown’s &lt;b&gt;“REST With Grails 3”&lt;/b&gt; workshop. He explained Grails capabilities to build RESTful services with a small amount of code, explained the content negotation and more. The best part was his introduction to JSON views (more to come).
+&lt;/p&gt;
+
+&lt;h2&gt;The talks&lt;/h2&gt;
+
+&lt;p&gt;
+Graeme Rocher kicked off the first day of talks with a keynote detailing the current state of Grails and the future, which is very exciting!
+He talked about all the new cool features in Grails 3.2: &lt;a href=&quot;http://gorm.grails.org/6.0.x/whatsNew/manual/index.html&quot; target=&quot;_blank&quot;&gt;GORM 6 Suite which includes RxGORM&lt;/a&gt;, &lt;a href=&quot;https://grails.org/plugins.html#plugin/angular-scaffolding&quot; target=&quot;_blank&quot;&gt;AngularJS 1.0 Scaffolding&lt;/a&gt; and &lt;a href=&quot;http://views.grails.org/1.1.x/&quot; target=&quot;_blank&quot;&gt;JSON Views 1.1&lt;/a&gt;. I can&apos;t describe how excited I was when I saw all these cool features, Grails is a solid framework and evolving very fast thanks to the hard work of the OCI team and the community.
+&lt;/p&gt;
+
+&lt;p&gt;
+During the first day I attended to the following talks:
+&lt;/p&gt;
+
+&lt;ul&gt;
+	&lt;li&gt;
+		&lt;b&gt;Gradle Recipes for Android:&lt;/b&gt; I don&apos;t have background in Android but a few months ago I had to work on build scripts for an Android app. This talk by Ken Kousen (kenkousen) was very helpful to me in order to understand more about the Android ecosystem and how it plays with Gradle. I can certainly tell that I learned a few tricks that will improve our current setup.
+	&lt;/li&gt;
+	&lt;li&gt;
+		&lt;b&gt;Dynamic GORM:&lt;/b&gt; What can I say? It&apos;s always a pleasure to watch, attend or hear a talk by Burt Beckwith (@burtbeckwith). You have to check this repo &lt;a href=&quot;https://github.com/agileorbit/gorm-util&quot; target=&quot;_blank&quot;&gt;https://github.com/agileorbit/gorm-util&lt;/a&gt;
+	&lt;/li&gt;
+	&lt;li&gt;
+		&lt;b&gt;Asset-Pipeline:&lt;/b&gt; This talk went over how to make the best use of your static assets. If you don&apos;t use asset-pipeline, you should start doing it now. This talk was important to me because in the company I work for we have several issues with the use of static assets. This was a great opportunity for me to talk with David Estes (@davydotcom) and ask him some questions. Thanks again David.
+	&lt;/li&gt;
+	&lt;li&gt;
+		&lt;b&gt;Codenarc Revisited:&lt;/b&gt; Jenn Strater (codeJENNerator) talked about the importance of using codenarc for code quality. If you don&apos;t know it, Codenarc is a static analysis tool for Groovy that enforces style, detects bad practices, and suggests improvements.
+	&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;
+	By the end of the day, Ken Kousen talk about the experiences as a Groovy Developer in the Java World. Believe me, this talk was so energizing, thanks Ken for remember us how awesome are the groovy based technologies and this community. Oh yes, don&apos;t forget to use Kotlin (just kidding)
+&lt;/p&gt;
+
+&lt;p&gt;
+	After that we headed to the Object Partners Meet &amp; Greet where I had the opportunity to talk with very nice guys doing some cool stuff. It&apos;s funny because I live in Los Angeles and I never had the chance to meet Joshua Tuberville from VirtualTourist, cool guy.
+&lt;/p&gt;
+&lt;p&gt;
+	Of course we had the Groovy Puzzles hosted by Baruch (@jbaruch) and his especial guest Daniel Woods (@danveloper). As you can imagine they had great groovy puzzles and drinking rules. At the end, Daniel gave away two copies of his book &quot;Learning Ratpack&quot;. If you don&apos;t have this book I encourage you to &lt;a href=&quot;http://shop.oreilly.com/product/0636920037545.do&quot; target=&quot;_blank&quot;&gt;buy it&lt;/a&gt;. Not only because of the great quality of the book, but also because all the royalties will be donated to the &lt;a href=&quot;https://www.gr8ladies.org/&quot; target=&quot;_blank&quot;&gt;GR8Ladies&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+The second day was great too:
+&lt;/p&gt;
+
+&lt;ul&gt;
+	&lt;li&gt;
+		&lt;b&gt;Ratpack Web Framework:&lt;/b&gt; This talk by Daniel Woods (@danveloper) was great! He did some nice demos of how modern web development in Groovy should be using Ratpack. If you don&apos;t know, &lt;a href=&quot;https://ratpack.io/&quot; target=&quot;_blank&quot;&gt;Ratpack&lt;/a&gt; is a set of Java libraries for building modern HTTP applications. It provides just enough for writing practical, high performance, apps. It is built on Java 8, Netty and reactive principles.
+	&lt;/li&gt;
+	&lt;li&gt;
+	   &lt;b&gt;AngularJS in Grails:&lt;/b&gt; Craig Burke (@craigburke1) talked about building an AngularJS app using the Grails Angular profile. I really wanted to attend his talk and learn more on how to use AngularJS with Grails. I really liked his &lt;a href=&quot;https://github.com/craigburke/client-dependencies-gradle&quot; target=&quot;_blank&quot;&gt;Client Dependencies Gradle Plugin&lt;/a&gt; that allows you to declare client side dependencies in build.gradle from bower or npm without installing them.
+ &lt;/li&gt;
+	&lt;li&gt;
+		&lt;b&gt;Spring Cloud into Production:&lt;/b&gt; Todd Miller did a good explanation step by step on how to take a microservice architecture to production on AWS using technologies such as Spring Cloud Config, Eureka, Ribbon, Hystrix, Turbine. If you ever asked yourself how to take a microservice architecture from development to the cloud this is the right talk for you.
+	&lt;/li&gt;
+	&lt;li&gt;
+		&lt;b&gt;Fun With Spring Security:&lt;/b&gt; In this talk, Burt explained some use case scenarios for spring security: auto-role, lockout, no roles, x509 and extend the AuthenticationProvider to use an &quot;organization&quot;. I&apos;m a big fan of Spring Security, actually my wife always tell me that I&apos;m obsessed with it. As many technologies it has pros and cons, I really love it and I looking forward to contribute to it.
+	&lt;/li&gt;
+	&lt;li&gt;
+		&lt;b&gt;Testing Ratpack Applications:&lt;/b&gt; This was one of my favorites!!! Daniel Hyun (@Lspacewalker) demoed  a rich set of testing fixtures that allow you to fully test Ratpack applications. The cool thing about testing in Ratpack is that is also unopinionated so you are free to pick your testing framework, the examples were using Spock which is a technology that I enjoy. If you want to know more about Testing Ratpack Applications you should take a look on this: &lt;a href=&quot;https://danhyun.github.io/2016-gr8confus-testing-ratpack-apps/&quot; target=&quot;_blank&quot;&gt;https://danhyun.github.io/2016-gr8confus-testing-ratpack-apps/&lt;/a&gt;
+	&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;
+	To close this awesome conference, John Engelman (@johnrengelman) gave the talk &lt;b&gt;&quot;Writing Software in the Age of Agile: Microservices, Cloud, Containers, &amp; DevOps&quot;&lt;/b&gt;. He talked about new technologies and ideas that help to refine that it means to develop software in an agile environment and making a lot of emphasis in doing things faster with high quality. It was a great talk, specially if you care about the whole SDLC and the quality of your work on a daily basis.
+&lt;/p&gt;
+
+&lt;p&gt;
+	As a special recording, Ken Kousen and Baruch recorded the &lt;b&gt;Groovy Podcast&lt;/b&gt; live from GR8Conf. If you haven&apos;t watched it do it now! &lt;a href=&quot;https://www.youtube.com/watch?v=MWRWnKfbnIs&quot; target=&quot;_blank&quot;&gt;https://www.youtube.com/watch?v=MWRWnKfbnIs&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+	After that we headed to Gr8Ladies &amp; Gr8Allies Networking Meetup to have some appetizers and drinks. I really enjoyed this networking event.
+&lt;/p&gt;
+
+&lt;h2&gt;To finalize&lt;/h2&gt;
+
+&lt;p&gt;
+	During the conference I had the opportunity  and time to talk about software and everyday life with very talented and interesting people:
+	Craig Burke (&lt;a href=&quot;https://twitter.com/&quot; target=&quot;_blank&quot;&gt;@craigburke1&lt;/a&gt;),
+	Søren Berg Glasius (&lt;a href=&quot;https://twitter.com/sbglasius&quot; target=&quot;_blank&quot;&gt;@sbglasius&lt;/a&gt;),
+	Daniel Woods (&lt;a href=&quot;https://twitter.com/danveloper&quot; target=&quot;_blank&quot;&gt;@danveloper&lt;/a&gt;),
+	Jenn Strater (&lt;a href=&quot;https://twitter.com/codeJENNerator&quot; target=&quot;_blank&quot;&gt;@codeJENNerator&lt;/a&gt;),
+	Puneet Behl (&lt;a href=&quot;https://twitter.com/puneetbhl&quot; target=&quot;_blank&quot;&gt;@puneetbhl&lt;/a&gt;),
+	Ken (&lt;a href=&quot;https://twitter.com/kktec&quot; target=&quot;_blank&quot;&gt;@kktec&lt;/a&gt;),
+	Ken Kousen (&lt;a href=&quot;https://twitter.com/kenkousen&quot; target=&quot;_blank&quot;&gt;@kenkousen&lt;/a&gt;),
+	Burt Beckwith (&lt;a href=&quot;https://twitter.com/burtbeckwith&quot; target=&quot;_blank&quot;&gt;@burtbeckwith&lt;/a&gt;),
+	Baruch Sadogursky (&lt;a href=&quot;https://twitter.com/jbaruch&quot; target=&quot;_blank&quot;&gt;@jbaruch&lt;/a&gt;),
+	Steve Pember (&lt;a href=&quot;https://twitter.com/svpember&quot; target=&quot;_blank&quot;&gt;@svpember&lt;/a&gt;),
+	Danny Hyun (&lt;a href=&quot;https://twitter.com/Lspacewalker&quot; target=&quot;_blank&quot;&gt;@Lspacewalker&lt;/a&gt;),
+	Marcin Erdmann (&lt;a href=&quot;https://twitter.com/marcinerdmann&quot; target=&quot;_blank&quot;&gt;@marcinerdmann&lt;/a&gt;),
+	Ryan Vanderwerf (&lt;a href=&quot;https://twitter.com/RyanVanderwerf&quot; target=&quot;_blank&quot;&gt;@RyanVanderwerf&lt;/a&gt;),
+	Kyle Boon (&lt;a href=&quot;https://twitter.com/kyleboon&quot; target=&quot;_blank&quot;&gt;@kyleboon&lt;/a&gt;),
+	John Engelman (&lt;a href=&quot;https://twitter.com/johnrengelman&quot; target=&quot;_blank&quot;&gt;@johnrengelman&lt;/a&gt;),
+	Jeff Warren (&lt;a href=&quot;https://twitter.com/jekewa&quot; target=&quot;_blank&quot;&gt;@jekewa&lt;/a&gt;),
+	Joshua Tuberville (&lt;a href=&quot;https://twitter.com/jtuberville&quot; target=&quot;_blank&quot;&gt;@jtuberville&lt;/a&gt;),
+	Aaron Zirbes (&lt;a href=&quot;https://twitter.com/Zirbes&quot; target=&quot;_blank&quot;&gt;@Zirbes&lt;/a&gt;),
+	Shaun Jurgemeyer (&lt;a href=&quot;https://twitter.com/sjurgemeyer&quot; target=&quot;_blank&quot;&gt;@sjurgemeyer&lt;/a&gt;)
+	and so many others (btw you should follow them on Twitter)
+&lt;/p&gt;
+
+&lt;p&gt;
+	I would like to thank the GR8Conf US organizers for such a wonderful job! Overall GR8Conf US 2016 was a fantastic conference, and I’m already looking forward to attending Gr8Conf 2017!
+&lt;/p&gt;
+
+&lt;p&gt;
+	Also, special thanks to Jenn Strater (&lt;a href=&quot;https://twitter.com/codeJENNerator&quot; target=&quot;_blank&quot;&gt;@codeJENNerator&lt;/a&gt;) for all your help and support before and during the conference, I really appreciate it! Congrats again on your next adventure in Denmark and looking forward to meet again.
+&lt;/p&gt;
+
+&lt;p&gt;
+	I had a great time. I think everyone knows that the Groovy community is full of talented people, they are great human beings, kind and friendly... Software is a passion that drives everyone but there is more than that and I&apos;m looking forward to contribute back to it and see them again soon.
+&lt;/p&gt;
 
 	</description>
     </item>
     <item>
       <title>Grails Transactions - Revisited</title>
-      <link>http://rpalcolea.github.io/blog/2014/grails-transactions-revisited.html</link>
-      <pubDate>lun, 9 jun 2014 00:00:00 -0700</pubDate>
-      <guid isPermaLink="false">blog/2014/grails-transactions-revisited.html</guid>
+      <link>http://rpalcolea.github.io/blog/2016/grails-transactions-revisited.html</link>
+      <pubDate>Sun, 17 Jan 2016 00:00:00 -0800</pubDate>
+      <guid isPermaLink="false">blog/2016/grails-transactions-revisited.html</guid>
       	<description>
 	
 &lt;p&gt;As we know, Grails services by default have automatic transaction management such as propagation and so on. By setting transactional to false you disable automatic Spring managed transaction demarcation for every method in the service. When is set to the true, The propagation level of the transaction is by default PROPAGATION_REQUIRED. Also we can use the @ Transactional and @ NotTransactional annotations. &lt;/p&gt;
@@ -449,10 +569,10 @@ mysql&amp;gt;
 	</description>
     </item>
     <item>
-      <title>Grails Transactions - Revisited</title>
-      <link>http://rpalcolea.github.io/blog/2014/spring-security-login-with-recaptcha.html</link>
-      <pubDate>lun, 28 abr 2014 00:00:00 -0700</pubDate>
-      <guid isPermaLink="false">blog/2014/spring-security-login-with-recaptcha.html</guid>
+      <title>Spring Security Login With Recaptcha</title>
+      <link>http://rpalcolea.github.io/blog/2015/spring-security-login-with-recaptcha.html</link>
+      <pubDate>Sun, 19 Apr 2015 00:00:00 -0700</pubDate>
+      <guid isPermaLink="false">blog/2015/spring-security-login-with-recaptcha.html</guid>
       	<description>
 	
 &lt;h2&gt;Spring Security Login With Recaptcha&lt;/h2&gt;

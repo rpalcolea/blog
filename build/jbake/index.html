@@ -59,13 +59,133 @@
 	<div class="page-header">
 		<h1>Blog</h1>
 	</div>
-  			<a href="blog/2016/grails-transactions-revisited.html"><h1>Restart</h1></a>
-  			<p>17 enero 2016</p>
+  			<a href="blog/2016/GR8Conf-US-Recap-2016.html"><h1>GR8Conf US Recap 2016</h1></a>
+  			<p>01 August 2016</p>
   			<p>
-<p>After a couple of years I have found the motivation to write in this blog again. The idea is simple, writing about software development, particularly in the use of Groovy technologies.</p>
+<p>This was my first time attending GR8Conf and had a wonderful time and definitely it was a great experience.
+	As I mentioned to a few guys, I always wanted to attend but the circumstances were not appropriate on previous years but finally I did it!</p>
+
+<h2>The workshops</h2>
+
+<p>
+In the morning I went to the <b>“Getting Started With Grails 3”</b> workshop by Jeff Scott Brown. This session covered all the fundamentals of the framework, probably better as an introduction to developers not familiar with the framework but Jeff also included tips and tricks for developers with experience.
 </p>
-  			<a href="blog/2014/grails-transactions-revisited.html"><h1>Grails Transactions - Revisited</h1></a>
-  			<p>09 junio 2014</p>
+
+<p>
+In the afternoon I attended Jeff Brown’s <b>“REST With Grails 3”</b> workshop. He explained Grails capabilities to build RESTful services with a small amount of code, explained the content negotation and more. The best part was his introduction to JSON views (more to come).
+</p>
+
+<h2>The talks</h2>
+
+<p>
+Graeme Rocher kicked off the first day of talks with a keynote detailing the current state of Grails and the future, which is very exciting!
+He talked about all the new cool features in Grails 3.2: <a href="http://gorm.grails.org/6.0.x/whatsNew/manual/index.html" target="_blank">GORM 6 Suite which includes RxGORM</a>, <a href="https://grails.org/plugins.html#plugin/angular-scaffolding" target="_blank">AngularJS 1.0 Scaffolding</a> and <a href="http://views.grails.org/1.1.x/" target="_blank">JSON Views 1.1</a>. I can't describe how excited I was when I saw all these cool features, Grails is a solid framework and evolving very fast thanks to the hard work of the OCI team and the community.
+</p>
+
+<p>
+During the first day I attended to the following talks:
+</p>
+
+<ul>
+	<li>
+		<b>Gradle Recipes for Android:</b> I don't have background in Android but a few months ago I had to work on build scripts for an Android app. This talk by Ken Kousen (kenkousen) was very helpful to me in order to understand more about the Android ecosystem and how it plays with Gradle. I can certainly tell that I learned a few tricks that will improve our current setup.
+	</li>
+	<li>
+		<b>Dynamic GORM:</b> What can I say? It's always a pleasure to watch, attend or hear a talk by Burt Beckwith (@burtbeckwith). You have to check this repo <a href="https://github.com/agileorbit/gorm-util" target="_blank">https://github.com/agileorbit/gorm-util</a>
+	</li>
+	<li>
+		<b>Asset-Pipeline:</b> This talk went over how to make the best use of your static assets. If you don't use asset-pipeline, you should start doing it now. This talk was important to me because in the company I work for we have several issues with the use of static assets. This was a great opportunity for me to talk with David Estes (@davydotcom) and ask him some questions. Thanks again David.
+	</li>
+	<li>
+		<b>Codenarc Revisited:</b> Jenn Strater (codeJENNerator) talked about the importance of using codenarc for code quality. If you don't know it, Codenarc is a static analysis tool for Groovy that enforces style, detects bad practices, and suggests improvements.
+	</li>
+</ul>
+
+<p>
+	By the end of the day, Ken Kousen talk about the experiences as a Groovy Developer in the Java World. Believe me, this talk was so energizing, thanks Ken for remember us how awesome are the groovy based technologies and this community. Oh yes, don't forget to use Kotlin (just kidding)
+</p>
+
+<p>
+	After that we headed to the Object Partners Meet & Greet where I had the opportunity to talk with very nice guys doing some cool stuff. It's funny because I live in Los Angeles and I never had the chance to meet Joshua Tuberville from VirtualTourist, cool guy.
+</p>
+<p>
+	Of course we had the Groovy Puzzles hosted by Baruch (@jbaruch) and his especial guest Daniel Woods (@danveloper). As you can imagine they had great groovy puzzles and drinking rules. At the end, Daniel gave away two copies of his book "Learning Ratpack". If you don't have this book I encourage you to <a href="http://shop.oreilly.com/product/0636920037545.do" target="_blank">buy it</a>. Not only because of the great quality of the book, but also because all the royalties will be donated to the <a href="https://www.gr8ladies.org/" target="_blank">GR8Ladies</a>.
+</p>
+
+<p>
+The second day was great too:
+</p>
+
+<ul>
+	<li>
+		<b>Ratpack Web Framework:</b> This talk by Daniel Woods (@danveloper) was great! He did some nice demos of how modern web development in Groovy should be using Ratpack. If you don't know, <a href="https://ratpack.io/" target="_blank">Ratpack</a> is a set of Java libraries for building modern HTTP applications. It provides just enough for writing practical, high performance, apps. It is built on Java 8, Netty and reactive principles.
+	</li>
+	<li>
+	   <b>AngularJS in Grails:</b> Craig Burke (@craigburke1) talked about building an AngularJS app using the Grails Angular profile. I really wanted to attend his talk and learn more on how to use AngularJS with Grails. I really liked his <a href="https://github.com/craigburke/client-dependencies-gradle" target="_blank">Client Dependencies Gradle Plugin</a> that allows you to declare client side dependencies in build.gradle from bower or npm without installing them.
+ </li>
+	<li>
+		<b>Spring Cloud into Production:</b> Todd Miller did a good explanation step by step on how to take a microservice architecture to production on AWS using technologies such as Spring Cloud Config, Eureka, Ribbon, Hystrix, Turbine. If you ever asked yourself how to take a microservice architecture from development to the cloud this is the right talk for you.
+	</li>
+	<li>
+		<b>Fun With Spring Security:</b> In this talk, Burt explained some use case scenarios for spring security: auto-role, lockout, no roles, x509 and extend the AuthenticationProvider to use an "organization". I'm a big fan of Spring Security, actually my wife always tell me that I'm obsessed with it. As many technologies it has pros and cons, I really love it and I looking forward to contribute to it.
+	</li>
+	<li>
+		<b>Testing Ratpack Applications:</b> This was one of my favorites!!! Daniel Hyun (@Lspacewalker) demoed  a rich set of testing fixtures that allow you to fully test Ratpack applications. The cool thing about testing in Ratpack is that is also unopinionated so you are free to pick your testing framework, the examples were using Spock which is a technology that I enjoy. If you want to know more about Testing Ratpack Applications you should take a look on this: <a href="https://danhyun.github.io/2016-gr8confus-testing-ratpack-apps/" target="_blank">https://danhyun.github.io/2016-gr8confus-testing-ratpack-apps/</a>
+	</li>
+</ul>
+
+<p>
+	To close this awesome conference, John Engelman (@johnrengelman) gave the talk <b>"Writing Software in the Age of Agile: Microservices, Cloud, Containers, & DevOps"</b>. He talked about new technologies and ideas that help to refine that it means to develop software in an agile environment and making a lot of emphasis in doing things faster with high quality. It was a great talk, specially if you care about the whole SDLC and the quality of your work on a daily basis.
+</p>
+
+<p>
+	As a special recording, Ken Kousen and Baruch recorded the <b>Groovy Podcast</b> live from GR8Conf. If you haven't watched it do it now! <a href="https://www.youtube.com/watch?v=MWRWnKfbnIs" target="_blank">https://www.youtube.com/watch?v=MWRWnKfbnIs</a>
+</p>
+
+<p>
+	After that we headed to Gr8Ladies & Gr8Allies Networking Meetup to have some appetizers and drinks. I really enjoyed this networking event.
+</p>
+
+<h2>To finalize</h2>
+
+<p>
+	During the conference I had the opportunity  and time to talk about software and everyday life with very talented and interesting people:
+	Craig Burke (<a href="https://twitter.com/" target="_blank">@craigburke1</a>),
+	Søren Berg Glasius (<a href="https://twitter.com/sbglasius" target="_blank">@sbglasius</a>),
+	Daniel Woods (<a href="https://twitter.com/danveloper" target="_blank">@danveloper</a>),
+	Jenn Strater (<a href="https://twitter.com/codeJENNerator" target="_blank">@codeJENNerator</a>),
+	Puneet Behl (<a href="https://twitter.com/puneetbhl" target="_blank">@puneetbhl</a>),
+	Ken (<a href="https://twitter.com/kktec" target="_blank">@kktec</a>),
+	Ken Kousen (<a href="https://twitter.com/kenkousen" target="_blank">@kenkousen</a>),
+	Burt Beckwith (<a href="https://twitter.com/burtbeckwith" target="_blank">@burtbeckwith</a>),
+	Baruch Sadogursky (<a href="https://twitter.com/jbaruch" target="_blank">@jbaruch</a>),
+	Steve Pember (<a href="https://twitter.com/svpember" target="_blank">@svpember</a>),
+	Danny Hyun (<a href="https://twitter.com/Lspacewalker" target="_blank">@Lspacewalker</a>),
+	Marcin Erdmann (<a href="https://twitter.com/marcinerdmann" target="_blank">@marcinerdmann</a>),
+	Ryan Vanderwerf (<a href="https://twitter.com/RyanVanderwerf" target="_blank">@RyanVanderwerf</a>),
+	Kyle Boon (<a href="https://twitter.com/kyleboon" target="_blank">@kyleboon</a>),
+	John Engelman (<a href="https://twitter.com/johnrengelman" target="_blank">@johnrengelman</a>),
+	Jeff Warren (<a href="https://twitter.com/jekewa" target="_blank">@jekewa</a>),
+	Joshua Tuberville (<a href="https://twitter.com/jtuberville" target="_blank">@jtuberville</a>),
+	Aaron Zirbes (<a href="https://twitter.com/Zirbes" target="_blank">@Zirbes</a>),
+	Shaun Jurgemeyer (<a href="https://twitter.com/sjurgemeyer" target="_blank">@sjurgemeyer</a>)
+	and so many others (btw you should follow them on Twitter)
+</p>
+
+<p>
+	I would like to thank the GR8Conf US organizers for such a wonderful job! Overall GR8Conf US 2016 was a fantastic conference, and I’m already looking forward to attending Gr8Conf 2017!
+</p>
+
+<p>
+	Also, special thanks to Jenn Strater (<a href="https://twitter.com/codeJENNerator" target="_blank">@codeJENNerator</a>) for all your help and support before and during the conference, I really appreciate it! Congrats again on your next adventure in Denmark and looking forward to meet again.
+</p>
+
+<p>
+	I had a great time. I think everyone knows that the Groovy community is full of talented people, they are great human beings, kind and friendly... Software is a passion that drives everyone but there is more than that and I'm looking forward to contribute back to it and see them again soon.
+</p>
+</p>
+  			<a href="blog/2016/grails-transactions-revisited.html"><h1>Grails Transactions - Revisited</h1></a>
+  			<p>17 January 2016</p>
   			<p>
 <p>As we know, Grails services by default have automatic transaction management such as propagation and so on. By setting transactional to false you disable automatic Spring managed transaction demarcation for every method in the service. When is set to the true, The propagation level of the transaction is by default PROPAGATION_REQUIRED. Also we can use the @ Transactional and @ NotTransactional annotations. </p>
 
@@ -486,8 +606,8 @@ mysql&gt;
 
 <p>Hope this can help you in the future.</p>
 </p>
-  			<a href="blog/2014/spring-security-login-with-recaptcha.html"><h1>Grails Transactions - Revisited</h1></a>
-  			<p>28 abril 2014</p>
+  			<a href="blog/2015/spring-security-login-with-recaptcha.html"><h1>Spring Security Login With Recaptcha</h1></a>
+  			<p>19 April 2015</p>
   			<p>
 <h2>Spring Security Login With Recaptcha</h2>
 
