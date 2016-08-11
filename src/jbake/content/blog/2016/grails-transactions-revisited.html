@@ -3,6 +3,7 @@ date=2016-01-17
 type=post
 tags=blog
 status=published
+disqus_identifier=grails-transactions-revisited
 ~~~~~~
 
 <p>As we know, Grails services by default have automatic transaction management such as propagation and so on. By setting transactional to false you disable automatic Spring managed transaction demarcation for every method in the service. When is set to the true, The propagation level of the transaction is by default PROPAGATION_REQUIRED. Also we can use the @ Transactional and @ NotTransactional annotations. </p>
