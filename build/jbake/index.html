@@ -73,6 +73,73 @@
 	<div class="page-header">
 		<h1>Blog</h1>
 	</div>
+  			<a href="blog/2016/grails-using-intellij-to-connect-to-h2-database.html"><h1>Grails - Use IntelliJ&apos;s Database Tool to connect to in-memory H2 instance</h1></a>
+  			<p>16 September 2016</p>
+  			<p>
+<p><strong>H2</strong> is a relational database management system written in Java. It can be embedded in Java applications or run in the client-server mode</p>
+
+<p>When you use Grails for a new project, the default DBMS (DataBase Management System) is H2. A cool characteristic of this DBMS is its capability to handle in-memory tables: it is possible to create a database living in the RAM memory.</p>
+
+<p>In <strong>Grails 3.x</strong> your database configuration might look as follows:</p>
+<pre class="prettyprint">
+<code>
+dataSource:
+	  pooled: true
+	  jmxExport: true
+	  driverClassName: org.h2.Driver
+	  username: sa
+	  password:
+
+environments:
+    development:
+	     dataSource:
+	          dbCreate: create-drop
+            url: jdbc:h2:mem:devDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+    test:
+       dataSource:
+            dbCreate: create-drop
+            url: jdbc:h2:mem:testDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+</code>
+</pre>
+
+<p>One nice feature of IntelliJ is the <a href="https://www.jetbrains.com/help/idea/2016.2/database-tool-window.html" target="_blank">Database Tool Window</a>.
+
+<p>Wouldn't be nice to connect to your H2 in memory database using IntelliJ? Well that's possible using a TCP Server for client/server connections.</p>
+
+<p>You can accomplish this by simply doing the following in your <strong>BootStrap.groovy</strong> file</p>
+
+<pre class="prettyprint">
+<code>
+import org.h2.tools.Server
+
+class BootStrap {
+	  final String[] args = [
+	        "-tcpPort", "8092",
+	        "-tcpAllowOthers"]
+
+	  Server server
+
+	  def init = { servletContext ->
+	        server = Server.createTcpServer(args).start()
+	  }
+
+	  def destroy = {
+	        server.stop()
+	  }
+}
+</code>
+</pre>
+
+<p>Doing this will start a TCP server on port 8092 that allow others to connect</p>
+
+<p><strong>IMPORTANT: This is an example for development/test environment, you should modify this behavior for production environment.</strong></p>
+
+<p>After we start our app, we can use the Database Tool Window and add a connection to a remote H2 database</p>
+
+<p><img src="https://s14.postimg.io/nhbxj8agx/Screen_Shot_2016_09_16_at_10_52_42_AM.png"/></p>
+
+<p>I hope you find this helpful.</p>
+</p>
   			<a href="blog/2016/GR8Conf-US-Recap-2016.html"><h1>GR8Conf US Recap 2016</h1></a>
   			<p>01 August 2016</p>
   			<p>

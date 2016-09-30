@@ -6,9 +6,82 @@
     <atom:link href="http://rpalcolea.github.io/feed.xml" rel="self" type="application/rss+xml" />
     <description>Roberto Perez is a software engineer who is passionate about all aspects of software development. He mainly focuses on JVM based languages like Groovy and such as frameworks like Grails, Spring Boot, Ratpack</description>
     <language>en-gb</language>
-    <pubDate>Thu, 11 Aug 2016 06:34:10 -0700</pubDate>
-    <lastBuildDate>Thu, 11 Aug 2016 06:34:10 -0700</lastBuildDate>
+    <pubDate>Fri, 16 Sep 2016 14:16:28 -0700</pubDate>
+    <lastBuildDate>Fri, 16 Sep 2016 14:16:28 -0700</lastBuildDate>
 
+    <item>
+      <title>Grails - Use IntelliJ&apos;s Database Tool to connect to in-memory H2 instance</title>
+      <link>http://rpalcolea.github.io/blog/2016/grails-using-intellij-to-connect-to-h2-database.html</link>
+      <pubDate>Fri, 16 Sep 2016 00:00:00 -0700</pubDate>
+      <guid isPermaLink="false">blog/2016/grails-using-intellij-to-connect-to-h2-database.html</guid>
+      	<description>
+	
+&lt;p&gt;&lt;strong&gt;H2&lt;/strong&gt; is a relational database management system written in Java. It can be embedded in Java applications or run in the client-server mode&lt;/p&gt;
+
+&lt;p&gt;When you use Grails for a new project, the default DBMS (DataBase Management System) is H2. A cool characteristic of this DBMS is its capability to handle in-memory tables: it is possible to create a database living in the RAM memory.&lt;/p&gt;
+
+&lt;p&gt;In &lt;strong&gt;Grails 3.x&lt;/strong&gt; your database configuration might look as follows:&lt;/p&gt;
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+dataSource:
+	  pooled: true
+	  jmxExport: true
+	  driverClassName: org.h2.Driver
+	  username: sa
+	  password:
+
+environments:
+    development:
+	     dataSource:
+	          dbCreate: create-drop
+            url: jdbc:h2:mem:devDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+    test:
+       dataSource:
+            dbCreate: create-drop
+            url: jdbc:h2:mem:testDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+&lt;/code&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;One nice feature of IntelliJ is the &lt;a href=&quot;https://www.jetbrains.com/help/idea/2016.2/database-tool-window.html&quot; target=&quot;_blank&quot;&gt;Database Tool Window&lt;/a&gt;.
+
+&lt;p&gt;Wouldn&apos;t be nice to connect to your H2 in memory database using IntelliJ? Well that&apos;s possible using a TCP Server for client/server connections.&lt;/p&gt;
+
+&lt;p&gt;You can accomplish this by simply doing the following in your &lt;strong&gt;BootStrap.groovy&lt;/strong&gt; file&lt;/p&gt;
+
+&lt;pre class=&quot;prettyprint&quot;&gt;
+&lt;code&gt;
+import org.h2.tools.Server
+
+class BootStrap {
+	  final String[] args = [
+	        &quot;-tcpPort&quot;, &quot;8092&quot;,
+	        &quot;-tcpAllowOthers&quot;]
+
+	  Server server
+
+	  def init = { servletContext -&gt;
+	        server = Server.createTcpServer(args).start()
+	  }
+
+	  def destroy = {
+	        server.stop()
+	  }
+}
+&lt;/code&gt;
+&lt;/pre&gt;
+
+&lt;p&gt;Doing this will start a TCP server on port 8092 that allow others to connect&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;IMPORTANT: This is an example for development/test environment, you should modify this behavior for production environment.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;After we start our app, we can use the Database Tool Window and add a connection to a remote H2 database&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://s14.postimg.io/nhbxj8agx/Screen_Shot_2016_09_16_at_10_52_42_AM.png&quot;/&gt;&lt;/p&gt;
+
+&lt;p&gt;I hope you find this helpful.&lt;/p&gt;
+
+	</description>
+    </item>
     <item>
       <title>GR8Conf US Recap 2016</title>
       <link>http://rpalcolea.github.io/blog/2016/GR8Conf-US-Recap-2016.html</link>

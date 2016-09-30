@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Grails - Use IntelliJ&apos;s Database Tool to connect to in-memory H2 instance</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="keywords" content="">
+    <meta name="generator" content="JBake">
+
+    <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+    <!-- Le styles -->
+    <link href="../../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/asciidoctor.css" rel="stylesheet">
+    <link href="../../css/base.css" rel="stylesheet">
+    <link href="../../css/prettify.css" rel="stylesheet">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <!--<link rel="apple-touch-icon-precomposed" sizes="144x144" href="../assets/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../assets/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../assets/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="../assets/ico/apple-touch-icon-57-precomposed.png">-->
+    <link rel="shortcut icon" href="../../favicon.ico">
+  </head>
+  <body onload="prettyPrint()">
+    <div id="wrap">
+
+	<!-- Fixed navbar -->
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../../">@rpalcolea</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="../../index.html">Home</a></li>
+            <li><a href="../../about.html">About</a></li>
+            <li><a href="../../feed.xml">Subscribe</a></li>
+						<li><a href="https://github.com/rpalcolea" target="_blank"><i class="icon-2x icon-github"></i></a></li>
+						<li><a href="https://twitter.com/rpalcolea" target="_blank"><i class="icon-2x icon-twitter"></i></a></li>
+						<li><a href="https://www.linkedin.com/in/robertoperezalcolea" target="_blank"><i class="icon-2x icon-linkedin"></i></a></li>
+				</ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+    <div class="container">
+
+	<div class="page-header">
+		<h1>Grails - Use IntelliJ&apos;s Database Tool to connect to in-memory H2 instance</h1>
+	</div>
+
+	<p><em>16 September 2016</em></p>
+
+	<p>
+<p><strong>H2</strong> is a relational database management system written in Java. It can be embedded in Java applications or run in the client-server mode</p>
+
+<p>When you use Grails for a new project, the default DBMS (DataBase Management System) is H2. A cool characteristic of this DBMS is its capability to handle in-memory tables: it is possible to create a database living in the RAM memory.</p>
+
+<p>In <strong>Grails 3.x</strong> your database configuration might look as follows:</p>
+<pre class="prettyprint">
+<code>
+dataSource:
+	  pooled: true
+	  jmxExport: true
+	  driverClassName: org.h2.Driver
+	  username: sa
+	  password:
+
+environments:
+    development:
+	     dataSource:
+	          dbCreate: create-drop
+            url: jdbc:h2:mem:devDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+    test:
+       dataSource:
+            dbCreate: create-drop
+            url: jdbc:h2:mem:testDb;MVCC=TRUE;LOCK_TIMEOUT=10000;DB_CLOSE_ON_EXIT=FALSE
+</code>
+</pre>
+
+<p>One nice feature of IntelliJ is the <a href="https://www.jetbrains.com/help/idea/2016.2/database-tool-window.html" target="_blank">Database Tool Window</a>.
+
+<p>Wouldn't be nice to connect to your H2 in memory database using IntelliJ? Well that's possible using a TCP Server for client/server connections.</p>
+
+<p>You can accomplish this by simply doing the following in your <strong>BootStrap.groovy</strong> file</p>
+
+<pre class="prettyprint">
+<code>
+import org.h2.tools.Server
+
+class BootStrap {
+	  final String[] args = [
+	        "-tcpPort", "8092",
+	        "-tcpAllowOthers"]
+
+	  Server server
+
+	  def init = { servletContext ->
+	        server = Server.createTcpServer(args).start()
+	  }
+
+	  def destroy = {
+	        server.stop()
+	  }
+}
+</code>
+</pre>
+
+<p>Doing this will start a TCP server on port 8092 that allow others to connect</p>
+
+<p><strong>IMPORTANT: This is an example for development/test environment, you should modify this behavior for production environment.</strong></p>
+
+<p>After we start our app, we can use the Database Tool Window and add a connection to a remote H2 database</p>
+
+<p><img src="https://s14.postimg.io/nhbxj8agx/Screen_Shot_2016_09_16_at_10_52_42_AM.png"/></p>
+
+<p>I hope you find this helpful.</p>
+</p>
+
+	<!-- Disqus Comments Section -->
+		 	 <hr />
+<div class="row">
+    <div class="box">
+        <div id="disqus_thread"></div>
+        		<script type="text/javascript">
+        		    /* * * CONFIGURATION VARIABLES * * */
+        		    var disqus_shortname = 'rpalcolea';
+        		    var disqus_identifier = 'grails-intellij-h2-database-tool';
+
+        		    /* * * DON'T EDIT BELOW THIS LINE * * */
+        		    (function() {
+        		        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        		        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        		        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        		    })();
+        		</script>
+		        <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+    </div>
+</div>
+
+	<hr />
+
+		</div>
+		<div id="push"></div>
+    </div>
+
+    <div id="footer">
+      <div class="container">
+        <p class="muted credit">&copy; 2016 Roberto Perez Alcolea | Mixed with <a href="http://getbootstrap.com/">Bootstrap v3.1.1</a> | Baked with <a href="http://jbake.org">JBake v2.4.0</a></p>
+      </div>
+    </div>
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../js/jquery-1.11.1.min.js"></script>
+    <script src="../../js/bootstrap.min.js"></script>
+    <script src="../../js/prettify.js"></script>
+
+  </body>
+</html>
